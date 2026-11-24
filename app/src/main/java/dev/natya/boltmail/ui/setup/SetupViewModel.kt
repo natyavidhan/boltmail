@@ -47,6 +47,9 @@ class SetupViewModel(first: Boolean) : ViewModel() {
     var provider by mutableStateOf<Provider?>(null)
     var appPassword by mutableStateOf(false)
     var error by mutableStateOf<String?>(null)
+
+    /** The technical reason behind [error], shown small so it can be reported. */
+    var errorDetail by mutableStateOf<String?>(null)
     var busy by mutableStateOf(false)
     val checks = mutableStateListOf(Check.Waiting, Check.Waiting, Check.Waiting)
 
@@ -71,6 +74,7 @@ class SetupViewModel(first: Boolean) : ViewModel() {
         email = v.trim()
         provider = Providers.byEmail(email)
         error = null
+        errorDetail = null
     }
 
     private fun duplicate(addr: String) = Graph.dao.accountsWithEmail(addr) > 0
@@ -107,6 +111,7 @@ class SetupViewModel(first: Boolean) : ViewModel() {
 
     private suspend fun start(manual: ServerConfig?) {
         error = null
+        errorDetail = null
         step = Step.Checking
         checks[0] = Check.Running; checks[1] = Check.Waiting; checks[2] = Check.Waiting
         val p = manual?.let { Provider("custom", Providers.domainOf(email), it) }
@@ -145,6 +150,7 @@ class SetupViewModel(first: Boolean) : ViewModel() {
         } catch (t: Throwable) {
             checks[1] = Check.Failed
             error = signInError(t, acct)
+            errorDetail = if (MailErrors.isAuth(t)) null else MailErrors.details(t)
             if (MailErrors.isAuth(t) || acct.auth == AUTH_GOOGLE) {
                 step = if (manual) Step.Manual else Step.Email
             } else {
@@ -159,6 +165,7 @@ class SetupViewModel(first: Boolean) : ViewModel() {
             withContext(Dispatchers.IO) { Mail.verifySmtp(acct) }
         } catch (t: Throwable) {
             checks[2] = Check.Failed
+            errorDetail = MailErrors.details(t)
             prefillManual(acct)
             error = "Signed in, but sending mail failed: ${MailErrors.describe(t, acct.smtpHost)} Check the outgoing server below."
             step = Step.Manual

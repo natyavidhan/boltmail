@@ -39,6 +39,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
@@ -244,6 +245,7 @@ private fun EmailStep(vm: SetupViewModel, showBack: Boolean, onBack: () -> Unit)
         vm.error?.let {
             Text(it, style = type.bodySmall, color = c.danger, modifier = Modifier.padding(start = 24.dp, end = 24.dp, top = 12.dp))
         }
+        ErrorDetail(vm.errorDetail)
         Spacer(Modifier.height(24.dp))
         Column(Modifier.padding(horizontal = 16.dp)) {
             if (vm.googleFlow) {
@@ -318,8 +320,10 @@ private fun ManualStep(vm: SetupViewModel) {
     var reveal by remember { mutableStateOf(false) }
     Page("Server settings", "Your email host lists these in its help pages, usually under IMAP and SMTP.", onBack = { vm.step = Step.Email }) {
         vm.error?.let {
-            Text(it, style = type.bodySmall, color = c.danger, modifier = Modifier.padding(start = 24.dp, end = 24.dp, bottom = 12.dp))
+            Text(it, style = type.bodySmall, color = c.danger, modifier = Modifier.padding(start = 24.dp, end = 24.dp))
         }
+        ErrorDetail(vm.errorDetail)
+        if (vm.error != null) Spacer(Modifier.height(12.dp))
         ShadeGroup {
             item { shape -> InputRow(shape, "Email", vm.email, vm::onEmail, keyboard = KeyboardOptions(keyboardType = KeyboardType.Email)) }
             item { shape -> InputRow(shape, "Username", vm.username, { vm.username = it }, keyboard = KeyboardOptions(keyboardType = KeyboardType.Email)) }
@@ -531,5 +535,19 @@ fun InputRow(
             },
         )
         trailing?.invoke()
+    }
+}
+
+/** Small selectable technical detail under an error, so it can be copied into a bug report. */
+@Composable
+private fun ErrorDetail(detail: String?) {
+    if (detail == null) return
+    SelectionContainer {
+        Text(
+            detail,
+            style = type.labelSmall,
+            color = Bolt.colors.ink3,
+            modifier = Modifier.padding(start = 24.dp, end = 24.dp, top = 4.dp),
+        )
     }
 }
