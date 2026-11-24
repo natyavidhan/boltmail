@@ -2,7 +2,6 @@ package dev.natya.boltmail.mail
 
 import android.content.Context
 import dev.natya.boltmail.data.Account
-import dev.natya.boltmail.data.SEC_NONE
 import dev.natya.boltmail.data.SEC_SSL
 import dev.natya.boltmail.data.SEC_STARTTLS
 import dev.natya.boltmail.data.Secrets
@@ -15,7 +14,6 @@ import javax.activation.MailcapCommandMap
 import javax.mail.AuthenticationFailedException
 import javax.mail.Session
 import javax.mail.Transport
-import javax.net.ssl.SSLSocketFactory
 
 object MailSession {
     private const val CONNECT_TIMEOUT = 20_000
@@ -66,17 +64,22 @@ object MailSession {
         props["mail.$p.ignorebodystructuresize"] = "true"
         props["mail.$p.ssl.checkserveridentity"] = "true"
         props["mail.$p.auth.mechanisms"] = if (a.isGoogle()) "XOAUTH2" else "PLAIN LOGIN"
-        props["mail.$p.ssl.socketFactory"] =
-            TrackingSSLSocketFactory(SSLSocketFactory.getDefault() as SSLSocketFactory, tracker)
-        when (a.imapSecurity) {
-            SEC_STARTTLS -> {
-                props["mail.$p.starttls.enable"] = "true"
-                props["mail.$p.starttls.required"] = "true"
-                props["mail.$p.socketFactory"] = TrackingSocketFactory(tracker)
-            }
-            SEC_NONE -> props["mail.$p.socketFactory"] = TrackingSocketFactory(tracker)
+        dialThrough(props, p, tracker)
+        if (a.imapSecurity == SEC_STARTTLS) {
+            props["mail.$p.starttls.enable"] = "true"
+            props["mail.$p.starttls.required"] = "true"
         }
         return Session.getInstance(props)
+    }
+
+    /**
+     * Route connections through [TrackingSocketFactory] so every server address (IPv6 and IPv4) is tried.
+     * Fallback is off: otherwise JavaMail retries with a plain socket that only tries the first address,
+     * and its error would hide ours.
+     */
+    private fun dialThrough(props: Properties, p: String, tracker: SocketTracker) {
+        props["mail.$p.socketFactory"] = TrackingSocketFactory(tracker)
+        props["mail.$p.socketFactory.fallback"] = "false"
     }
 
     fun smtpSession(a: Account): Session {
@@ -93,6 +96,7 @@ object MailSession {
         // Same EHLO argument Thunderbird uses; avoids leaking the device's host name.
         props["mail.$p.localhost"] = "[127.0.0.1]"
         props["mail.$p.auth.mechanisms"] = if (a.isGoogle()) "XOAUTH2" else "PLAIN LOGIN"
+        dialThrough(props, p, SocketTracker())
         if (a.smtpSecurity == SEC_STARTTLS) {
             props["mail.$p.starttls.enable"] = "true"
             props["mail.$p.starttls.required"] = "true"

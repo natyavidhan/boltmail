@@ -240,15 +240,17 @@ object Discovery {
     }
 
     private fun tlsReachable(host: String, port: Int): Boolean = runCatching {
-        (SSLSocketFactory.getDefault().createSocket() as SSLSocket).use { s ->
-            s.connect(InetSocketAddress(host, port), 5000)
-            s.soTimeout = 5000
+        val plain = DialingSocket().apply {
+            connect(InetSocketAddress(host, port), 5000)
+            soTimeout = 5000
+        }
+        ((SSLSocketFactory.getDefault() as SSLSocketFactory).createSocket(plain, host, port, true) as SSLSocket).use { s ->
             s.startHandshake()
             HttpsURLConnection.getDefaultHostnameVerifier().verify(host, s.session)
         }
     }.getOrDefault(false)
 
     private fun plainReachable(host: String, port: Int): Boolean = runCatching {
-        java.net.Socket().use { it.connect(InetSocketAddress(host, port), 5000); true }
+        DialingSocket().use { it.connect(InetSocketAddress(host, port), 5000); true }
     }.getOrDefault(false)
 }
