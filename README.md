@@ -75,7 +75,7 @@ For end-to-end testing without a real mailbox, [`tools/greenmail.py`](tools/gree
 ## Layout
 
 ```
-app/src/main/java/app/boltmail/
+app/src/main/java/dev/natya/boltmail/
   data/      Room entities and DAO, Keystore-encrypted secrets, preferences
   mail/      IMAP/SMTP sessions, sync, MIME parsing, provider discovery, outbox (OpRunner), composer
   push/      foreground push service, IDLE workers, keep-alive alarm, notifications

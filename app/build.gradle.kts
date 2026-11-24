@@ -6,11 +6,11 @@ plugins {
 }
 
 android {
-    namespace = "app.boltmail"
+    namespace = "dev.natya.boltmail"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "app.boltmail"
+        applicationId = "dev.natya.boltmail"
         minSdk = 26
         targetSdk = 35
         versionCode = 1

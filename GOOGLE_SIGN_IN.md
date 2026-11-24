@@ -14,7 +14,7 @@ Until it's done, add Gmail with **Use an app password instead**.
    - *Data access*: add the scope `https://mail.google.com/`.
    - Back on *Audience*, choose **Publish app**. The app stays *unverified*, which is fine for personal use. The first time you sign in, Google shows a "Google hasn't verified this app" screen: tap **Advanced → Go to BoltMail**. If you leave the app in *Testing* instead, Google signs you out every 7 days.
 4. **Clients → Create client → Android**:
-   - Package name: `app.boltmail`
+   - Package name: `dev.natya.boltmail`
    - SHA-1 certificate fingerprint: `27:6C:B3:DB:64:BF:76:F1:4C:60:B3:02:A0:6E:FA:B2:D7:20:5D:9B`
 
    This is the fingerprint of the key on the computer that built BoltMail (`~/.android/debug.keystore`). If you ever build on another computer, create a second Android client with that computer's SHA-1:
