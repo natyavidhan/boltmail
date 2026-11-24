@@ -18,6 +18,10 @@ A small, quiet Android mail app for IMAP accounts (Hostinger, Gmail, Zoho, Yahoo
 
 ## Install on your phone
 
+Download the latest `BoltMail-x.y.z.apk` from [Releases](https://github.com/natyavidhan/boltmail/releases/latest) and open it on the phone, allowing your browser or file manager to install apps. BoltMail needs Android 8.0 or newer.
+
+To build it yourself:
+
 ```sh
 ./gradlew :app:assembleRelease
 # APK: app/build/outputs/apk/release/app-release.apk
